@@ -1,9 +1,7 @@
-import dotenv from 'dotenv'
+import './dotEnvConfig'
 import { login, getInvoices, getOrders, updateInvoice } from './api'
 import { uploadPDF, init } from './StorageClient'
 import printDocument from './printDocument'
-
-dotenv.config()
 
 // const stdout = fs.createWriteStream('./stdout.txt')
 // const console = new Console({ stdout, stderr: stdout })
@@ -31,7 +29,7 @@ async function main() {
 
       console.info(`Successfully processed invoice ID=${invoice.id}...`)
     }
-    // fs.unlinkSync('./pdftemp.pdf')
+    fs.unlinkSync('./pdftemp.pdf')
     console.log('All invoices have been proceessed')
     console.log('stopping')
   } catch (e) {

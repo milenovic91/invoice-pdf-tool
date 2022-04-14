@@ -35,6 +35,8 @@ export async function getInvoices(from, to) {
     searchParams.append('to', to)
     searchParams.append('statuses', 'READY')
     searchParams.append('statuses', 'PDF_CREATION_FAILED')
+    // searchParams.append('stores', '3243')
+    // searchParams.append('stores', '3939')
     const response = await fetch(API_BASE + '/api/admin/invoice' + '?' + searchParams.toString(), {
       headers: {
         Authorization: `Bearer ${user.accessToken}`

@@ -95,7 +95,7 @@ const Cell = ({ children, width }) => {
 const round = val => Math.ceil(val * 100) / 100
 
 export default async function print(invoice, orders) {
-  let discount = invoice.discount - invoice.discountCorrection
+  let discount = invoice.discount + invoice.discountCorrection
   let discountPercent = round(discount * 100 / invoice.appFee)
 
   let onlineOrders = orders.filter(order => order.paymentMethod === 'CARD')
@@ -232,6 +232,10 @@ export default async function print(invoice, orders) {
             <Text> </Text>
             <Text> </Text>
           </View>
+        </View>
+      </Page>
+      <Page size="A4" style={styles.page}>
+        <View style={styles.body}>
           <View style={{padding: 5, backgroundColor: '#eef0f2', flexDirection: 'row'}}>
             <Text style={{marginRight: 40}}>MR.D spisak narudzbina</Text>
             <Text>{invoice.storeName}</Text>
@@ -284,26 +288,29 @@ export default async function print(invoice, orders) {
               </View>
             ))}
           </View>
-          {!!onlineOrders.length &&
-          <>
-            <View style={{padding: 5, backgroundColor: '#eef0f2', flexDirection: 'row', marginTop: 10}}>
-              <Text style={{marginRight: 40}}>MR.D spisak online narudžbina</Text>
-              <Text>{invoice.storeName}</Text>
+        </View>
+      </Page>
+      {!!onlineOrders.length &&
+      <Page size="A4" style={styles.page}>
+        <View style={styles.body}>
+          <View style={{padding: 5, backgroundColor: '#eef0f2', flexDirection: 'row', marginTop: 10}}>
+            <Text style={{marginRight: 40}}>MR.D spisak online narudžbina</Text>
+            <Text>{invoice.storeName}</Text>
+          </View>
+          <View style={{flexDirection: 'row', justifyContent: 'space-between', fontSize: 7, lineHeight: 1.5, marginBottom: 10, marginTop: 5}}>
+            <View style={{width: '20%'}}>
+              <Text>Vreme od: {moment(invoice.from).format('DD.MM.YYYY. HH:mm:ss')}</Text>
+              <Text>Vreme do: {moment(invoice.to).format('DD.MM.YYYY. HH:mm:ss')}</Text>
             </View>
-            <View style={{flexDirection: 'row', justifyContent: 'space-between', fontSize: 7, lineHeight: 1.5, marginBottom: 10, marginTop: 5}}>
-              <View style={{width: '20%'}}>
-                <Text>Vreme od: {moment(invoice.from).format('DD.MM.YYYY. HH:mm:ss')}</Text>
-                <Text>Vreme do: {moment(invoice.to).format('DD.MM.YYYY. HH:mm:ss')}</Text>
-              </View>
-              <View style={{width: '20%'}}>
-                <Text>PayOnline br. narudžbina: {onlineOrders.length}</Text>
-                <Text>PayOnline ukupno: {onlineTotal}</Text>
-              </View>
-              <View style={{width: '20%'}}></View>
-              <View style={{width: '20%'}}></View>
-              <View style={{width: '20%'}}></View>
+            <View style={{width: '20%'}}>
+              <Text>PayOnline br. narudžbina: {onlineOrders.length}</Text>
+              <Text>PayOnline ukupno: {onlineTotal}</Text>
             </View>
-            <View style={styles.table}>
+            <View style={{width: '20%'}}></View>
+            <View style={{width: '20%'}}></View>
+            <View style={{width: '20%'}}></View>
+          </View>
+          <View style={styles.table}>
             <View style={styles.tableRow}>
               <Cell>ID</Cell>
               <Cell width="20%">Datum i vreme</Cell>
@@ -329,9 +336,8 @@ export default async function print(invoice, orders) {
               </View>
             ))}
           </View>
-          </>}
         </View>
-      </Page>
+      </Page>}
     </Document>
   )
   // return await renderToString(doc)
