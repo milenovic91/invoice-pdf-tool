@@ -16,12 +16,11 @@ export function init() {
 }
 
 export async function uploadPDF(invoice, /*pdfString*/) {
-  const datePart = moment(invoice.from).format('MM_DD') + '_' + moment(invoice.to).format('MM_DD')
   if (!process.env.IPT_CLOUD_SUBFOLDER) {
     throw new Error('IPT_CLOUD_SUBFOLDER param is required')
   }
   try {
-    const key = `store-invoices/${process.env.IPT_CLOUD_SUBFOLDER}/${invoice.id}.${invoice.storeId}.${datePart}.pdf`
+    const key = `store-invoices/${process.env.IPT_CLOUD_SUBFOLDER}/${invoice.serial}.${invoice.id}.${invoice.storeId}.pdf`
     await s3Client.send(new AWS.PutObjectCommand({
       Bucket: 'mrd-cdn',
       ContentType: 'application/pdf',
