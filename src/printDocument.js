@@ -232,7 +232,7 @@ export default async function print(invoice, orders) {
             <Text> </Text>
             <Text>Fakturisao:</Text>
             <Text> </Text>
-            <Text>Ivan Levi</Text>
+            <Text>Marko Stanković</Text>
             <Text> </Text>
             <Text>Direktor i lice ovlašćeno za izdavanje računovodstvene isprave</Text>
             <Text>Pin Technology d.o.o. Beograd - Savski venac</Text>
