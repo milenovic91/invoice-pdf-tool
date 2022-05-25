@@ -108,7 +108,7 @@ export default async function print(invoice, orders) {
 
   let onlineTotal = onlineOrders.reduce((acc, curr)=> {
     acc += curr.itemsPrice
-    if (curr.contractType === 'MP') {
+    if (curr.isFromMarketPlace) {
       acc += curr.deliveryPrice
     }
     return acc
@@ -149,7 +149,7 @@ export default async function print(invoice, orders) {
             <Text>Račun broj {invoice.serial}</Text>
           </View>
           <View style={styles.info}>
-            <View>
+            <View style={{maxWidth: '65%'}}>
               <Text>{invoice.billingName}</Text>
               <Text>{invoice.billingAddress}</Text>
               <Text>{invoice.billingPlace}</Text>
