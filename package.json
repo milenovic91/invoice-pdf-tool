@@ -5,6 +5,7 @@
   "main": "src/index.js",
   "scripts": {
     "start": "webpack && node ./dist/main.js",
+    "start-mail": "webpack && node ./dist/mailmain.js",
     "build": "webpack",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -19,6 +20,7 @@
     "isomorphic-fetch": "2.2.1",
     "moment": "^2.29.1",
     "node-fetch": "^3.2.3",
+    "nodemailer": "^6.7.5",
     "react": "^17.0.2"
   },
   "devDependencies": {

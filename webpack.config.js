@@ -2,7 +2,10 @@ const path = require('path')
 
 module.exports = {
   target: 'node',
-  entry: './src/index.js',
+  entry: {
+    mailmain: './src/mailer/index.js',
+    main: './src/index.js'
+  },
   output: {
     path: path.resolve(__dirname, 'dist'),
     filename: '[name].js'
