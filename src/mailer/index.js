@@ -2,6 +2,7 @@ import { createTransport } from 'nodemailer'
 import list from './list'
 import moment from 'moment'
 import template from './template'
+import '../dotEnvConfig'
 
 (async function main() {
   try {
@@ -10,12 +11,12 @@ import template from './template'
       port: 587,
       secure: false,
       auth: {
-        user: 'kontakt@misterd.rs',
-        pass: 'test123testQwjzrs'
+        user: process.env.PK_MAIL_USERNAME,
+        pass: process.env.PK_MAIL_PASSWORD
       }
     })
     
-    const today = moment().format('DD.MM')
+    const today = '23.05';// moment().format('D.MM')
 
     const rows = list
       .split('\n')

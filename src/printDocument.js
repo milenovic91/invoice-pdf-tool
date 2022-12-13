@@ -339,7 +339,7 @@ export default async function print(invoice, orders) {
                 <Cell>{order.paymentMethod}</Cell>
                 <Cell>{order.fee}%</Cell>
                 <Cell>{order.total?.toFixed(2)}</Cell>
-                <Cell>MR.D</Cell>
+                <Cell>{order.isWhiteLabel ? 'WEB' : 'MR.D'}</Cell>
               </View>
             ))}
           </View>}

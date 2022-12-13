@@ -12,7 +12,7 @@ async function main() {
     init()
     await login(process.env.IPT_USERNAME, process.env.IPT_PASSWORD)
     console.info(`Successfully logged in at ${process.env.IPT_API_BASE} as ${process.env.IPT_USERNAME}`)
-    const { content: invoices} = await getInvoices(Date.now() - 5 * 24 * 60 * 60000, Date.now() + 5 * 24 * 60 * 60000)
+    const { content: invoices} = await getInvoices(Date.now() - 10 * 24 * 60 * 60000, Date.now() + 5 * 24 * 60 * 60000)
     console.info(`Fetched ${invoices?.length} invoices`)
     for (let invoice of invoices) {
       console.info(`Started processing invoice SERIAL=${invoice.serial}...`)
