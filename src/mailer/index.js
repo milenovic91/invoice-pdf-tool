@@ -1,8 +1,9 @@
 import { createTransport } from 'nodemailer'
-import list from './list'
 import moment from 'moment'
 import template from './template'
 import '../dotEnvConfig'
+
+const list = []
 
 (async function main() {
   try {

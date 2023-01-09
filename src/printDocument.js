@@ -96,13 +96,14 @@ const Cell = ({ children, width }) => {
   )
 }
 
-const round = val => Math.ceil(val * 100) / 100
+//const round = val => Math.ceil(val * 100) / 100
+const round = val => Number(Number(val).toFixed(2))
 
 const formatValue = val => val.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})
 
 export default async function print(invoice, orders) {
   let discount = 0 - invoice.discount - invoice.discountCorrection
-  let discountPercent = Math.abs(round(discount * 100 / invoice.appFee))
+  let discountPercent = !!invoice.appFee ? Math.abs(round(discount * 100 / invoice.appFee)) : 0
 
   let onlineOrders = orders.filter(order => order.paymentMethod === 'CARD')
 
@@ -157,14 +158,16 @@ export default async function print(invoice, orders) {
               <Text>Matični broj: {invoice.billingMb}</Text>
             </View>
             <View style={{flexDirection: 'column'}}>
+              {invoice.to &&
               <View style={styles.infoRow}>
                 <Text style={styles.infoLabel}>Datum prometa usluge:</Text>
                 <Text>{moment(invoice.to).format('DD.MM.YYYY.')}</Text>
-              </View>
+              </View>}
+              {invoice.from && invoice.to &&
               <View style={styles.infoRow}>
                 <Text style={styles.infoLabel}>Obračunski period:</Text>
                 <Text>{moment(invoice.from).format('DD.MM.')}-{moment(invoice.to).format('DD.MM.YYYY.')}</Text>
-              </View>
+              </View>}
               <View style={styles.infoRow}>
                 <Text style={styles.infoLabel}>Mesto izdavanja računa:</Text>
                 <Text>Beograd</Text>
@@ -193,9 +196,15 @@ export default async function print(invoice, orders) {
               </View>
               {!!discount &&
               <View style={styles.commonRow}>
-                <Text>Popust {discountPercent}%</Text>
+                <Text>Popust {discountPercent ? discountPercent + '%' : ''}</Text>
                 <Text>{formatValue(discount)} RSD</Text>
               </View>}
+              {invoice?.items?.map(item => (
+                <View style={styles.commonRow}>
+                  <Text>{item.name}    {item.count} <Text style={{fontSize: 6}}>(količina)</Text> x {formatValue(item.price)} <Text style={{fontSize: 6}}>(jedinična cena)</Text></Text>
+                  <Text>{formatValue(item.count * item.price)} RSD</Text>
+                </View>
+              ))}
             </View>
             <View style={{...styles.summaryRow, flexDirection: 'row', justifyContent: 'flex-end'}}>
               <View style={{width: '25%'}}>
@@ -241,6 +250,7 @@ export default async function print(invoice, orders) {
           </View>
         </View>
       </Page>
+      {!!(orders?.length) &&
       <Page size="A4" style={styles.page}>
         <View style={styles.body}>
           <View style={{padding: 5, backgroundColor: '#eef0f2', flexDirection: 'row'}}>
@@ -296,7 +306,8 @@ export default async function print(invoice, orders) {
             ))}
           </View>
         </View>
-      </Page>
+      </Page>}
+      {!!(onlineOrders?.length) &&
       <Page size="A4" style={styles.page}>
         <View style={styles.body}>
           <View style={{padding: 5, backgroundColor: '#eef0f2', flexDirection: 'row', marginTop: 10}}>
@@ -344,7 +355,7 @@ export default async function print(invoice, orders) {
             ))}
           </View>}
         </View>
-      </Page>
+      </Page>}
     </Document>
   )
   // return await renderToString(doc)

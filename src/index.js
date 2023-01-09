@@ -29,7 +29,9 @@ async function main() {
 
       console.info(`Successfully processed invoice SERIAL=${invoice.serial}...`)
     }
-    fs.unlinkSync('./pdftemp.pdf')
+    if (fs.existsSync('./pdftemp.pdf')) {
+      fs.unlinkSync('./pdftemp.pdf')
+    }
     console.log('All invoices have been proceessed')
     console.log('stopping')
   } catch (e) {
