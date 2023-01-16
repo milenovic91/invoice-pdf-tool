@@ -20,7 +20,7 @@ export async function uploadPDF(invoice, /*pdfString*/) {
     throw new Error('IPT_CLOUD_SUBFOLDER param is required')
   }
   try {
-    const key = `store-invoices/${process.env.IPT_CLOUD_SUBFOLDER}/${invoice.serial}.${invoice.id}.${invoice.storeId}.pdf`
+    const key = `store-invoices/${process.env.IPT_CLOUD_SUBFOLDER}/${invoice.serial}.${invoice.id}.pdf`
     await s3Client.send(new AWS.PutObjectCommand({
       Bucket: 'mrd-cdn',
       ContentType: 'application/pdf',

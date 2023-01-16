@@ -3,6 +3,7 @@ import { login, getInvoices, getOrders, updateInvoice } from './api'
 import { uploadPDF, init } from './StorageClient'
 import printDocument from './printDocument'
 import fs from 'fs'
+import summaryInput from '../summaryInput.json'
 
 // const stdout = fs.createWriteStream('./stdout.txt')
 // const console = new Console({ stdout, stderr: stdout })
@@ -18,7 +19,7 @@ async function main() {
       console.info(`Started processing invoice SERIAL=${invoice.serial}...`)
       const orders = await getOrders(invoice.id)
 
-      const doc = await printDocument(invoice, orders)
+      const doc = await printDocument(invoice, orders, summaryInput)
       
       const pdfUrl = await uploadPDF(invoice, doc)
 
