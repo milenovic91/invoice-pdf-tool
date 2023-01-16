@@ -112,9 +112,6 @@ export default async function print(invoice, orders, summaryInput) {
   let discountPercent = !!invoice.appFee ? Math.abs(round(discount * 100 / invoice.appFee)) : 0
   let vatAmount = round(invoice.total * invoice.vat / 100.)
 
-  // applicable for fleet invoices
-  const perOrderFee = invoice.type === 'F' && orders.length !== 0 ? invoice.appFee / orders.length : 0
-
   let onlineOrders = orders.filter(order => order.paymentMethod === 'CARD')
 
   let onlineTotal = onlineOrders.reduce((acc, curr)=> {
@@ -138,6 +135,19 @@ export default async function print(invoice, orders, summaryInput) {
   }, 0)
 
   let feeBaseTotal = orders.reduce((acc, curr) => acc + curr.feeBase, 0)
+
+  // applicable for fleet invoices
+  const perOrderFee = invoice.type === 'F' && orders.length !== 0 ? invoice.appFee / orders.length : 0
+  let fleetCashTotal = 0;
+  let fleetOnlineTotal = 0;
+  if (invoice.type === 'F') {
+    fleetCashTotal = orders?.reduce((acc, curr) => {
+      return acc + curr.deliveryPrice
+    }, 0)
+    fleetOnlineTotal = onlineOrders?.reduce((acc, curr) => {
+      return acc + curr.deliveryPrice
+    }, 0)
+  }
 
   const serviceDate = invoice.serviceDate || invoice.to;
   const issuedAt = invoice.issuedAt;
@@ -405,13 +415,15 @@ export default async function print(invoice, orders, summaryInput) {
               <Text>Vreme od: {moment(invoice.from).format('DD.MM.YYYY. HH:mm:ss')}</Text>
               <Text>Vreme do: {moment(invoice.to).format('DD.MM.YYYY. HH:mm:ss')}</Text>
             </View>
-            {/* <View style={{width: '20%'}}>
-              <Text>PayOnline br. narudžbina: {onlineOrders.length}</Text>
-              <Text>PayOnline ukupno: {onlineTotal?.toFixed(2)}</Text>
+            <View style={{width: '20%'}}>
+              <Text>Keš ukupno: {fleetCashTotal}</Text>
+              <Text>Online ukupno: {fleetOnlineTotal}</Text>
             </View>
             <View style={{width: '20%'}}></View>
             <View style={{width: '20%'}}></View>
-            <View style={{width: '20%'}}></View> */}
+            <View style={{width: '20%'}}>
+              <Text style={{fontWeight: 'bold'}}>Ukupno: {fleetCashTotal + fleetOnlineTotal}</Text>
+            </View>
           </View>
           {!!orders.length &&
           <View style={styles.table}>
