@@ -86,6 +86,12 @@ const styles = StyleSheet.create({
   rowCell: {
     width: '10%',
     textAlign: 'center'
+  },
+  summary2Cell: {
+    borderRight: '1px solid #b71a39',
+    width: '25%',
+    padding: 5,
+    textAlign: 'center'
   }
 });
 
@@ -259,6 +265,28 @@ export default async function print(invoice, orders, summaryInput) {
           </View>
         </View>
       </Page>
+      {summaryInput[invoice.serial] &&
+      <Page size="A4" style={styles.page}>
+        <View style={styles.body}>
+          <Text style={{marginBottom: 20}}>
+            Sumirani podazi za obracunski period: {moment(invoice.from).format('DD.MM.YYYY.')}-{moment(invoice.to).format('DD.MM.YYYY.')} za PIB: {summaryInput[invoice.serial].pib}
+          </Text>
+          <View style={styles.summary}>
+            <View style={{...styles.summaryRow, ...styles.commonRow, padding: 0 }}>
+              <Text style={styles.summary2Cell}>Ukupan iznos računa za PIB</Text>
+              <Text style={styles.summary2Cell}>Ukupan iznos Online-a za PIB</Text>
+              <Text style={styles.summary2Cell}>Obaveza MR.D prema partneru</Text>
+              <Text style={{...styles.summary2Cell, borderRight: 0}}>Obaveza partnera prema MR.D-u</Text>
+            </View>
+            <View style={{...styles.summaryRow, ...styles.commonRow, padding: 0, borderBottom: '1px solid #b71a39'}}>
+              <Text style={styles.summary2Cell}>{summaryInput[invoice.serial].pibTotal}</Text>
+              <Text style={styles.summary2Cell}>{summaryInput[invoice.serial].pibOnlineTotal}</Text>
+              <Text style={styles.summary2Cell}>{summaryInput[invoice.serial].mrdPart}</Text>
+              <Text style={{...styles.summary2Cell, borderRight: 0}}>{summaryInput[invoice.serial].customerPart}</Text>
+            </View>
+          </View>
+        </View>
+      </Page>}
       {!!(orders?.length) && invoice.type !== 'F' &&
       <Page size="A4" style={styles.page}>
         <View style={styles.body}>
