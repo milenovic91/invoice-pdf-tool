@@ -3,20 +3,38 @@ import { login, getInvoices, getOrders, updateInvoice } from './api'
 import { uploadPDF, init } from './StorageClient'
 import printDocument from './printDocument'
 import fs from 'fs'
-import summaryInput from '../summaryInput.json'
+import readXlsxFile from 'read-excel-file/node';
+import { logInfo, logError, logWarn, requireNonNullVariable } from './utils'
 
 // const stdout = fs.createWriteStream('./stdout.txt')
 // const console = new Console({ stdout, stderr: stdout })
 
 async function main() {
+  logInfo('Mister D PDF tool is starting...')
+  requireNonNullVariable(process.env.IPT_SUMMARIES_FILE, 'IPT_SUMMARIES_FILE variable is missing')
+  var summaryInput = {}
+  if (fs.existsSync(process.env.IPT_SUMMARIES_FILE)) {
+    try {
+      const rows = await readXlsxFile(process.env.IPT_SUMMARIES_FILE)
+      var summaryInput = rows.reduce((acc, curr) => {
+        let [id, storeName, pib, invoiceSerial, pibTotal, pibOnlineTotal, mrdPart, customerPart] = curr
+        acc[invoiceSerial] = { id, storeName, pib, invoiceSerial, pibTotal, pibOnlineTotal, mrdPart, customerPart }
+        return acc;
+      }, {})
+    } catch (e) {
+      logError('Could not load and parse ' + process.env.IPT_SUMMARIES_FILE)
+      throw e
+    }
+  }
+
   try {
     init()
     await login(process.env.IPT_USERNAME, process.env.IPT_PASSWORD)
-    console.info(`Successfully logged in at ${process.env.IPT_API_BASE} as ${process.env.IPT_USERNAME}`)
+    logInfo(`Successfully logged in at ${process.env.IPT_API_BASE} as ${process.env.IPT_USERNAME}`)
     const { content: invoices} = await getInvoices(Date.now() - 10 * 24 * 60 * 60000, Date.now() + 5 * 24 * 60 * 60000)
-    console.info(`Fetched ${invoices?.length} invoices`)
+    logInfo(`Fetched ${invoices?.length} invoices`)
     for (let invoice of invoices) {
-      console.info(`Started processing invoice SERIAL=${invoice.serial}...`)
+      logWarn(`Started processing invoice SERIAL=${invoice.serial}...`)
       const orders = await getOrders(invoice.id)
 
       const doc = await printDocument(invoice, orders, summaryInput)
@@ -28,17 +46,16 @@ async function main() {
         pdfUrl
       })
 
-      console.info(`Successfully processed invoice SERIAL=${invoice.serial}...`)
+      logInfo(`Successfully processed invoice SERIAL=${invoice.serial}...`)
     }
     if (fs.existsSync('./pdftemp.pdf')) {
       fs.unlinkSync('./pdftemp.pdf')
     }
-    console.log('All invoices have been proceessed')
-    console.log('stopping')
+    logInfo('Mister D PDF tool is stopping...')
   } catch (e) {
-    console.log('Script failed')
+    logError('Script has failed...')
+    logError('Mister D PDF tool is stopping...')
     console.log(e)
-    console.log('stopping...')
   }
 }
 

@@ -1,6 +1,7 @@
 import moment from 'moment'
 const AWS = require('@aws-sdk/client-s3')
 import fs from 'fs'
+import { requireNonNullVariable } from './utils'
 
 let s3Client = null
 
@@ -16,9 +17,9 @@ export function init() {
 }
 
 export async function uploadPDF(invoice, /*pdfString*/) {
-  if (!process.env.IPT_CLOUD_SUBFOLDER) {
-    throw new Error('IPT_CLOUD_SUBFOLDER param is required')
-  }
+  requireNonNullVariable(process.env.IPT_CLOUD_KEY_ID, 'IPT_CLOUD_KEY_ID')
+  requireNonNullVariable(process.env.IPT_CLOUD_SECRET, 'IPT_CLOUD_SECRET')
+  requireNonNullVariable(process.env.IPT_CLOUD_SUBFOLDER, 'IPT_CLOUD_SUBFOLDER')
   try {
     const key = `store-invoices/${process.env.IPT_CLOUD_SUBFOLDER}/${invoice.serial}.${invoice.id}.pdf`
     await s3Client.send(new AWS.PutObjectCommand({
