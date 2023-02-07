@@ -86,6 +86,12 @@ const styles = StyleSheet.create({
   rowCell: {
     width: '10%',
     textAlign: 'center'
+  },
+  summary2Cell: {
+    borderRight: '1px solid #b71a39',
+    width: '25%',
+    padding: 5,
+    textAlign: 'center'
   }
 });
 
@@ -101,9 +107,10 @@ const round = val => Number(Number(val).toFixed(2))
 
 const formatValue = val => val.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})
 
-export default async function print(invoice, orders) {
+export default async function print(invoice, orders, summaryInput) {
   let discount = 0 - invoice.discount - invoice.discountCorrection
   let discountPercent = !!invoice.appFee ? Math.abs(round(discount * 100 / invoice.appFee)) : 0
+  let vatAmount = round(invoice.total * invoice.vat / 100.)
 
   let onlineOrders = orders.filter(order => order.paymentMethod === 'CARD')
 
@@ -129,11 +136,28 @@ export default async function print(invoice, orders) {
 
   let feeBaseTotal = orders.reduce((acc, curr) => acc + curr.feeBase, 0)
 
+  // applicable for fleet invoices
+  const perOrderFee = invoice.type === 'F' && orders.length !== 0 ? invoice.appFee / orders.length : 0
+  let fleetCashTotal = 0;
+  let fleetOnlineTotal = 0;
+  if (invoice.type === 'F') {
+    fleetCashTotal = orders?.reduce((acc, curr) => {
+      return acc + curr.deliveryPrice
+    }, 0)
+    fleetOnlineTotal = onlineOrders?.reduce((acc, curr) => {
+      return acc + curr.deliveryPrice
+    }, 0)
+  }
+
+  const serviceDate = invoice.serviceDate || invoice.to;
+  const issuedAt = invoice.issuedAt;
+  const deliveryDate = invoice.deliveryDate || moment(invoice.issuedAt).add(15, 'day').valueOf();
+
   const doc = (
     <Document>
       <Page size="A4" style={styles.page}>
         <View style={styles.header}>
-          <Image style={{width: 100, height: 103}} src={fs.readFileSync(path.resolve(__dirname, '../logo.png'))} />
+          <Image style={{width: 103, height: 103}} src={fs.readFileSync(path.resolve(__dirname, '../newLogo.png'))} />
           {/* <Logo /> */}
           <View style={styles.headerContent}>
             <Text style={styles.headerLabel}>Pin Technology d.o.o. Beograd - Savski venac</Text>
@@ -158,10 +182,10 @@ export default async function print(invoice, orders) {
               <Text>Matični broj: {invoice.billingMb}</Text>
             </View>
             <View style={{flexDirection: 'column'}}>
-              {invoice.to &&
+              {serviceDate &&
               <View style={styles.infoRow}>
                 <Text style={styles.infoLabel}>Datum prometa usluge:</Text>
-                <Text>{moment(invoice.to).format('DD.MM.YYYY.')}</Text>
+                <Text>{moment(serviceDate).format('DD.MM.YYYY.')}</Text>
               </View>}
               {invoice.from && invoice.to &&
               <View style={styles.infoRow}>
@@ -174,11 +198,11 @@ export default async function print(invoice, orders) {
               </View>
               <View style={styles.infoRow}>
                 <Text style={styles.infoLabel}>Datum izdavanja računa:</Text>
-                <Text>{moment(invoice.issuedAt).format('DD.MM.YYYY.')}</Text>
+                <Text>{moment(issuedAt).format('DD.MM.YYYY.')}</Text>
               </View>
               <View style={styles.infoRow}>
                 <Text style={styles.infoLabel}>Datum dospeća računa:</Text>
-                <Text>{moment(invoice.issuedAt).add(15, 'day').format('DD.MM.YYYY.')}</Text>
+                <Text>{moment(deliveryDate).format('DD.MM.YYYY.')}</Text>
               </View>
             </View>
           </View>
@@ -190,10 +214,11 @@ export default async function print(invoice, orders) {
               </View>
             </View>
             <View style={styles.summaryRow}>
+              {!!invoice.appFee &&
               <View style={styles.commonRow}>
                 <Text>Platform fee</Text>
                 <Text>{formatValue(invoice.appFee)} RSD</Text>
-              </View>
+              </View>}
               {!!discount &&
               <View style={styles.commonRow}>
                 <Text>Popust {discountPercent ? discountPercent + '%' : ''}</Text>
@@ -214,26 +239,31 @@ export default async function print(invoice, orders) {
                 </View>
                 <View style={styles.commonRow}>
                   <Text>Stopa PDVa:</Text>
-                  <Text>20%</Text>
+                  <Text>{invoice.vat}%</Text>
                 </View>
                 <View style={styles.commonRow}>
                   <Text>Iznos PDVa:</Text>
-                  <Text>{formatValue(round(invoice.total * 0.2))} RSD</Text>
+                  <Text>{formatValue(vatAmount)} RSD</Text>
                 </View>
               </View>
             </View>
             <View style={{...styles.summaryRow, flexDirection: 'row', justifyContent: 'flex-end', borderBottom: '1px solid #b71a39'}}>
               <View style={{...styles.commonRow, width: '25%', fontWeight: '600'}}>
                 <Text>Ukupno za uplatu:</Text>
-                <Text>{formatValue(round(invoice.total * 1.2))} RSD</Text>
+                <Text>{formatValue(invoice.total + vatAmount)} RSD</Text>
               </View>
             </View>
           </View>
           <View>
+            {invoice.vatChangeBase &&
+            <>
+              <Text>{invoice.vatChangeBase}</Text>
+              <Text> </Text>
+            </>}
             <Text>Prilikom uplate, pozovite se na broj računa: {invoice.serial}</Text>
             <Text> </Text>
             <Text>Rok za plaćanje je petnaest (15) dana od dana izdavanja računa, pa Vas molimo da račun platite </Text>
-            <Text>najkasnije do datuma dospeća: {moment(invoice.issuedAt).add(15, 'day').format('DD.MM.YYYY.')}</Text>
+            <Text>najkasnije do datuma dospeća: {moment(deliveryDate).format('DD.MM.YYYY.')}</Text>
             <Text> </Text>
             <Text style={{fontWeight: 'bold'}}>Hvala Vam na saradnji i što svoje obaveze izmirujete na vreme!</Text>
             <Text style={{fontWeight: '600'}}>Faktura je sastavljena izvorno u elektronskoj formi.</Text>
@@ -250,7 +280,29 @@ export default async function print(invoice, orders) {
           </View>
         </View>
       </Page>
-      {!!(orders?.length) &&
+      {summaryInput[invoice.serial] &&
+      <Page size="A4" style={styles.page}>
+        <View style={styles.body}>
+          <Text style={{marginBottom: 20}}>
+            Sumirani podaci za obračunski period: {moment(invoice.from).format('DD.MM.YYYY.')}-{moment(invoice.to).format('DD.MM.YYYY.')} za PIB: {summaryInput[invoice.serial].pib}
+          </Text>
+          <View style={styles.summary}>
+            <View style={{...styles.summaryRow, ...styles.commonRow, padding: 0 }}>
+              <Text style={styles.summary2Cell}>Ukupan iznos računa za PIB</Text>
+              <Text style={styles.summary2Cell}>Ukupan iznos Online-a za PIB</Text>
+              <Text style={styles.summary2Cell}>Obaveza MR.D-a prema partneru</Text>
+              <Text style={{...styles.summary2Cell, borderRight: 0}}>Obaveza partnera prema MR.D-u</Text>
+            </View>
+            <View style={{...styles.summaryRow, ...styles.commonRow, padding: 0, borderBottom: '1px solid #b71a39'}}>
+              <Text style={styles.summary2Cell}>{formatValue(summaryInput[invoice.serial].pibTotal)}</Text>
+              <Text style={styles.summary2Cell}>{formatValue(summaryInput[invoice.serial].pibOnlineTotal)}</Text>
+              <Text style={styles.summary2Cell}>{formatValue(summaryInput[invoice.serial].mrdPart)}</Text>
+              <Text style={{...styles.summary2Cell, borderRight: 0}}>{formatValue(summaryInput[invoice.serial].customerPart)}</Text>
+            </View>
+          </View>
+        </View>
+      </Page>}
+      {!!(orders?.length) && invoice.type !== 'F' &&
       <Page size="A4" style={styles.page}>
         <View style={styles.body}>
           <View style={{padding: 5, backgroundColor: '#eef0f2', flexDirection: 'row'}}>
@@ -307,7 +359,7 @@ export default async function print(invoice, orders) {
           </View>
         </View>
       </Page>}
-      {!!(onlineOrders?.length) &&
+      {!!(onlineOrders?.length) && invoice.type !== 'F' &&
       <Page size="A4" style={styles.page}>
         <View style={styles.body}>
           <View style={{padding: 5, backgroundColor: '#eef0f2', flexDirection: 'row', marginTop: 10}}>
@@ -356,33 +408,57 @@ export default async function print(invoice, orders) {
           </View>}
         </View>
       </Page>}
+      {invoice.type === 'F' &&
+      <Page size="A4" style={styles.page}>
+        <View style={styles.body}>
+          <View style={{padding: 5, backgroundColor: '#eef0f2', flexDirection: 'row', marginTop: 10}}>
+            <Text style={{marginRight: 40}}>MR.D spisak narudžbina</Text>
+            <Text style={{fontWeight: 'bold'}}>{invoice.fleetName}</Text>
+          </View>
+          <View style={{flexDirection: 'row', justifyContent: 'space-between', fontSize: 7, lineHeight: 1.5, marginBottom: 10, marginTop: 5}}>
+            <View style={{width: '20%'}}>
+              <Text>Vreme od: {moment(invoice.from).format('DD.MM.YYYY. HH:mm:ss')}</Text>
+              <Text>Vreme do: {moment(invoice.to).format('DD.MM.YYYY. HH:mm:ss')}</Text>
+            </View>
+            <View style={{width: '20%'}}>
+              <Text>Keš ukupno: {fleetCashTotal?.toFixed(2)}</Text>
+              <Text>Online ukupno: {fleetOnlineTotal?.toFixed(2)}</Text>
+            </View>
+            <View style={{width: '20%'}}></View>
+            <View style={{width: '20%'}}></View>
+            <View style={{width: '20%'}}>
+              <Text style={{fontWeight: 'bold'}}>Ukupno: {(fleetCashTotal + fleetOnlineTotal)?.toFixed(2)}</Text>
+            </View>
+          </View>
+          {!!orders.length &&
+          <View style={styles.table}>
+            <View style={{...styles.tableRow, fontWeight: 'bold', marginBottom: 10}}>
+              <Cell>Serial</Cell>
+              <Cell width="20%">Datum i vreme</Cell>
+              <Cell>Dostava</Cell>
+              <Cell>Način{"\n"}plaćanja</Cell>
+              <Cell>Driver ID</Cell>
+              <Cell>Driver Name</Cell>
+              <Cell>Provizija</Cell>
+              <Cell>Izvor</Cell>
+            </View>
+            {orders?.map(order => (
+              <View style={styles.tableRow}>
+                <Cell>{order.id}</Cell>
+                <Cell width="20%">{moment(order.createdAt).format('MMM D, YYYY, HH:mm:ss A')}</Cell>
+                <Cell>{order.deliveryPrice?.toFixed(2)}</Cell>
+                <Cell>{order.paymentMethod}</Cell>
+                <Cell>{order.driverId}</Cell>
+                <Cell>{order.driverDisplayName}</Cell>
+                <Cell>{perOrderFee} RSD</Cell>
+                <Cell>{order.isWhiteLabel ? 'WEB' : 'MR.D'}</Cell>
+              </View>
+            ))}
+          </View>}
+        </View>
+      </Page>}
     </Document>
   )
   // return await renderToString(doc)
   return await renderToFile(doc, './pdftemp.pdf')
-}
-
-function Logo() {
-  return (
-    <Svg version="1.0" xmlns="http://www.w3.org/2000/svg"
-      width="100.000000pt" height="103.000000pt" viewBox="0 0 230.000000 237.000000"
-      preserveAspectRatio="xMidYMid meet">
-      <G transform="translate(0.000000,237.000000) scale(0.100000,-0.100000)"
-      fill="#b71a39" stroke="none">
-      <Path d="M0 1185 l0 -1185 1150 0 1150 0 0 1185 0 1185 -1150 0 -1150 0 0
-      -1185z m863 471 c159 -37 259 -183 244 -356 -6 -71 -21 -111 -64 -168 -26 -35
-      -215 -364 -226 -394 -10 -28 -24 -21 -51 27 l-25 46 21 34 20 35 -40 0 c-37 0
-      -42 3 -66 46 -14 26 -26 48 -26 50 0 2 37 4 82 6 l83 3 23 43 23 42 -134 0
-      -135 0 -44 48 c-55 62 -78 126 -78 220 0 152 100 283 243 318 68 16 81 16 150
-      0z m564 3 c132 -18 195 -45 276 -119 115 -105 162 -289 122 -479 -35 -169
-      -145 -283 -320 -332 -36 -10 -112 -14 -273 -14 l-224 0 -29 33 c-23 26 -29 41
-      -29 80 0 26 4 52 9 58 7 8 52 86 85 149 6 12 25 39 42 60 41 52 84 173 84 235
-      0 97 -57 229 -125 288 -19 17 -35 33 -35 36 0 17 304 21 417 5z"/>
-      <Path d="M734 1476 c-36 -16 -78 -68 -88 -108 -9 -41 9 -107 39 -138 61 -64
-      161 -58 219 13 24 30 29 45 29 91 0 59 -21 100 -68 130 -35 23 -93 28 -131 12z"/>
-      <Path d="M1190 1185 l0 -275 83 0 c144 0 228 36 279 117 21 34 23 50 23 158 0
-      105 -3 125 -22 162 -44 81 -118 113 -264 113 l-99 0 0 -275z"/>
-      </G>
-    </Svg>
-  )
 }
