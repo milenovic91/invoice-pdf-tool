@@ -10,8 +10,8 @@ import { logInfo, logError, logWarn, requireNonNullVariable } from './utils'
 // const console = new Console({ stdout, stderr: stdout })
 
 async function main() {
-  logInfo('Mister D PDF tool is starting...')
-  requireNonNullVariable(process.env.IPT_SUMMARIES_FILE, 'IPT_SUMMARIES_FILE variable is missing')
+  logInfo('MisterD PDF tool is starting...')
+  requireNonNullVariable(process.env.IPT_SUMMARIES_FILE, 'IPT_SUMMARIES_FILE')
   var summaryInput = {}
   if (fs.existsSync(process.env.IPT_SUMMARIES_FILE)) {
     try {
@@ -31,7 +31,15 @@ async function main() {
     init()
     await login(process.env.IPT_USERNAME, process.env.IPT_PASSWORD)
     logInfo(`Successfully logged in at ${process.env.IPT_API_BASE} as ${process.env.IPT_USERNAME}`)
-    const { content: invoices} = await getInvoices(Date.now() - 10 * 24 * 60 * 60000, Date.now() + 5 * 24 * 60 * 60000)
+    let startCreateDate = Date.now() - 10 * 24 * 60 * 60000
+    let endCreateDate = Date.now() + 5 * 24 * 60 * 60000
+    let passedSerial = null
+    process.argv.forEach(val => {
+      if (val.startsWith('--serial=')) {
+        passedSerial = val.split('=')[1]?.trim() ?? ''
+      }
+    })
+    const { content: invoices} = await getInvoices(startCreateDate, endCreateDate, passedSerial)
     logInfo(`Fetched ${invoices?.length} invoices`)
     for (let invoice of invoices) {
       logWarn(`Started processing invoice SERIAL=${invoice.serial}...`)
@@ -51,10 +59,10 @@ async function main() {
     if (fs.existsSync('./pdftemp.pdf')) {
       fs.unlinkSync('./pdftemp.pdf')
     }
-    logInfo('Mister D PDF tool is stopping...')
+    logInfo('MisterD PDF tool is stopping...')
   } catch (e) {
     logError('Script has failed...')
-    logError('Mister D PDF tool is stopping...')
+    logError('MisterD PDF tool is stopping...')
     console.log(e)
   }
 }

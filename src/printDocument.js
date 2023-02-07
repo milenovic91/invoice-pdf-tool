@@ -255,6 +255,11 @@ export default async function print(invoice, orders, summaryInput) {
             </View>
           </View>
           <View>
+            {invoice.vatChangeBase &&
+            <>
+              <Text>{invoice.vatChangeBase}</Text>
+              <Text> </Text>
+            </>}
             <Text>Prilikom uplate, pozovite se na broj računa: {invoice.serial}</Text>
             <Text> </Text>
             <Text>Rok za plaćanje je petnaest (15) dana od dana izdavanja računa, pa Vas molimo da račun platite </Text>
@@ -289,10 +294,10 @@ export default async function print(invoice, orders, summaryInput) {
               <Text style={{...styles.summary2Cell, borderRight: 0}}>Obaveza partnera prema MR.D-u</Text>
             </View>
             <View style={{...styles.summaryRow, ...styles.commonRow, padding: 0, borderBottom: '1px solid #b71a39'}}>
-              <Text style={styles.summary2Cell}>{summaryInput[invoice.serial].pibTotal}</Text>
-              <Text style={styles.summary2Cell}>{summaryInput[invoice.serial].pibOnlineTotal}</Text>
-              <Text style={styles.summary2Cell}>{summaryInput[invoice.serial].mrdPart}</Text>
-              <Text style={{...styles.summary2Cell, borderRight: 0}}>{summaryInput[invoice.serial].customerPart}</Text>
+              <Text style={styles.summary2Cell}>{formatValue(summaryInput[invoice.serial].pibTotal)}</Text>
+              <Text style={styles.summary2Cell}>{formatValue(summaryInput[invoice.serial].pibOnlineTotal)}</Text>
+              <Text style={styles.summary2Cell}>{formatValue(summaryInput[invoice.serial].mrdPart)}</Text>
+              <Text style={{...styles.summary2Cell, borderRight: 0}}>{formatValue(summaryInput[invoice.serial].customerPart)}</Text>
             </View>
           </View>
         </View>
@@ -416,13 +421,13 @@ export default async function print(invoice, orders, summaryInput) {
               <Text>Vreme do: {moment(invoice.to).format('DD.MM.YYYY. HH:mm:ss')}</Text>
             </View>
             <View style={{width: '20%'}}>
-              <Text>Keš ukupno: {fleetCashTotal}</Text>
-              <Text>Online ukupno: {fleetOnlineTotal}</Text>
+              <Text>Keš ukupno: {fleetCashTotal?.toFixed(2)}</Text>
+              <Text>Online ukupno: {fleetOnlineTotal?.toFixed(2)}</Text>
             </View>
             <View style={{width: '20%'}}></View>
             <View style={{width: '20%'}}></View>
             <View style={{width: '20%'}}>
-              <Text style={{fontWeight: 'bold'}}>Ukupno: {fleetCashTotal + fleetOnlineTotal}</Text>
+              <Text style={{fontWeight: 'bold'}}>Ukupno: {(fleetCashTotal + fleetOnlineTotal)?.toFixed(2)}</Text>
             </View>
           </View>
           {!!orders.length &&
