@@ -255,7 +255,7 @@ export default async function print(invoice, orders, summaryInput) {
             </View>
           </View>
           <View>
-            {invoice.vatChangeBase &&
+            {!!invoice.vatChangeBase &&
             <>
               <Text>{invoice.vatChangeBase}</Text>
               <Text> </Text>
