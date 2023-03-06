@@ -140,13 +140,15 @@ export default async function print(invoice, orders, summaryInput) {
   const perOrderFee = invoice.type === 'F' && orders.length !== 0 ? invoice.appFee / orders.length : 0
   let fleetCashTotal = 0;
   let fleetOnlineTotal = 0;
+  let fleetTotal = 0;
   if (invoice.type === 'F') {
-    fleetCashTotal = orders?.reduce((acc, curr) => {
+    fleetTotal = orders?.reduce((acc, curr) => {
       return acc + curr.deliveryPrice
     }, 0)
     fleetOnlineTotal = onlineOrders?.reduce((acc, curr) => {
       return acc + curr.deliveryPrice
     }, 0)
+    fleetCashTotal = fleetTotal - fleetOnlineTotal;
   }
 
   const serviceDate = invoice.serviceDate || invoice.to;
@@ -427,7 +429,7 @@ export default async function print(invoice, orders, summaryInput) {
             <View style={{width: '20%'}}></View>
             <View style={{width: '20%'}}></View>
             <View style={{width: '20%'}}>
-              <Text style={{fontWeight: 'bold'}}>Ukupno: {(fleetCashTotal + fleetOnlineTotal)?.toFixed(2)}</Text>
+              <Text style={{fontWeight: 'bold'}}>Ukupno: {fleeTotal?.toFixed(2)}</Text>
             </View>
           </View>
           {!!orders.length &&
