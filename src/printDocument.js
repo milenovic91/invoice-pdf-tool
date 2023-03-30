@@ -429,7 +429,7 @@ export default async function print(invoice, orders, summaryInput) {
             <View style={{width: '20%'}}></View>
             <View style={{width: '20%'}}></View>
             <View style={{width: '20%'}}>
-              <Text style={{fontWeight: 'bold'}}>Ukupno: {fleeTotal?.toFixed(2)}</Text>
+              <Text style={{fontWeight: 'bold'}}>Ukupno: {fleetTotal?.toFixed(2)}</Text>
             </View>
           </View>
           {!!orders.length &&
