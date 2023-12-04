@@ -107,12 +107,24 @@ const round = val => Number(Number(val).toFixed(2))
 
 const formatValue = val => val.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})
 
+const formatPaymentMethod = val => {
+  switch (val) {
+    case 'CARD':
+    case 'HYBRID':
+      return 'Card'
+    case 'CASH':
+      return 'Cash'
+    default:
+      return ''
+  }
+}
+
 export default async function print(invoice, orders, summaryInput) {
   let discount = 0 - invoice.discount - invoice.discountCorrection
   let discountPercent = !!invoice.appFee ? Math.abs(round(discount * 100 / invoice.appFee)) : 0
   let vatAmount = round(invoice.total * invoice.vat / 100.)
 
-  let onlineOrders = orders.filter(order => order.paymentMethod === 'CARD')
+  let onlineOrders = orders.filter(order => order.paymentMethod === 'CARD' || order.paymentMethod === 'HYBRID')
 
   let onlineTotal = onlineOrders.reduce((acc, curr)=> {
     acc += curr.itemsPrice
@@ -353,7 +365,7 @@ export default async function print(invoice, orders, summaryInput) {
                 <Cell>{order.itemsPrice?.toFixed(2)}</Cell>
                 <Cell>{order.deliveryPrice?.toFixed(2)}</Cell>
                 <Cell width="15%">{order.feeBase?.toFixed(2)}</Cell>
-                <Cell>{order.paymentMethod}</Cell>
+                <Cell>{formatPaymentMethod(order.paymentMethod)}</Cell>
                 <Cell>{order.fee}%</Cell>
                 <Cell>{order.total?.toFixed(2)}</Cell>
                 <Cell>MR.D</Cell>
@@ -402,7 +414,7 @@ export default async function print(invoice, orders, summaryInput) {
                 <Cell>{order.itemsPrice?.toFixed(2)}</Cell>
                 <Cell>{order.deliveryPrice?.toFixed(2)}</Cell>
                 <Cell width="15%">{order.feeBase?.toFixed(2)}</Cell>
-                <Cell>{order.paymentMethod}</Cell>
+                <Cell>{formatPaymentMethod(order.paymentMethod)}</Cell>
                 <Cell>{order.fee}%</Cell>
                 <Cell>{order.total?.toFixed(2)}</Cell>
                 <Cell>{order.isWhiteLabel ? 'WEB' : 'MR.D'}</Cell>
@@ -450,7 +462,7 @@ export default async function print(invoice, orders, summaryInput) {
                 <Cell>{order.id}</Cell>
                 <Cell width="20%">{moment(order.createdAt).format('MMM D, YYYY, HH:mm:ss A')}</Cell>
                 <Cell>{order.deliveryPrice?.toFixed(2)}</Cell>
-                <Cell>{order.paymentMethod}</Cell>
+                <Cell>{formatPaymentMethod(order.paymentMethod)}</Cell>
                 <Cell>{order.driverId}</Cell>
                 <Cell>{order.driverDisplayName}</Cell>
                 <Cell>{perOrderFee} RSD</Cell>
