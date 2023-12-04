@@ -268,7 +268,8 @@ export default async function print(invoice, orders, summaryInput) {
             <Text>najkasnije do datuma dospeća: {moment(deliveryDate).format('DD.MM.YYYY.')}</Text>
             <Text> </Text>
             <Text style={{fontWeight: 'bold'}}>Hvala Vam na saradnji i što svoje obaveze izmirujete na vreme!</Text>
-            <Text style={{fontWeight: '600'}}>Faktura je sastavljena izvorno u elektronskoj formi.</Text>
+            <Text style={{fontWeight: 'bold'}}>Faktura je izdata u skladu sa ugovorom po specifikaciji u prilogu.</Text>
+            <Text style={{fontWeight: 'bold'}}>Faktura je sastavljena izvorno u elektronskoj formi.</Text>
             <Text style={{fontWeight: 'bold'}}>Faktura je validna bez pečata i potpisa.</Text>
             <Text> </Text>
             <Text>Fakturisao:</Text>
