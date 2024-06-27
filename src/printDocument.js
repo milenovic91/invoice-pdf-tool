@@ -174,13 +174,13 @@ export default async function print(invoice, orders, summaryInput) {
           <Image style={{width: 103, height: 103}} src={fs.readFileSync(path.resolve(__dirname, '../newLogo.png'))} />
           {/* <Logo /> */}
           <View style={styles.headerContent}>
-            <Text style={styles.headerLabel}>Pin Technology d.o.o. Beograd - Savski venac</Text>
-            <Text>Dr Milutina Ivkovića 2a/4</Text>
-            <Text>11000 Beograd - Savski Venac</Text>
+            <Text style={styles.headerLabel}>DNP GO TECHNOLOGIES d.o.o. Beograd - Vračar</Text>
+            <Text>Masarikova 5, sprat: 19</Text>
+            <Text>11000 Beograd - Vračar</Text>
             <Text><Text style={styles.headerLabel}>Telefon </Text>+ 381 63 861 31 33</Text>
-            <Text><Text style={styles.headerLabel}>PIB </Text>112774710</Text>
-            <Text><Text style={styles.headerLabel}>Matični broj </Text>21736619</Text>
-            <Text><Text style={styles.headerLabel}>Račun broj </Text>160-6000001298135-97 Banca Intesa</Text>
+            <Text><Text style={styles.headerLabel}>PIB </Text>111246989</Text>
+            <Text><Text style={styles.headerLabel}>Matični broj </Text>21448613</Text>
+            <Text><Text style={styles.headerLabel}>Račun broj </Text>160-6000001424001-23 Banca Intesa</Text>
           </View>
         </View>
         <View style={styles.body}>
@@ -286,10 +286,10 @@ export default async function print(invoice, orders, summaryInput) {
             <Text> </Text>
             <Text>Fakturisao:</Text>
             <Text> </Text>
-            <Text>Marko Stanković</Text>
+            <Text>Ivan Levi</Text>
             <Text> </Text>
             <Text>Direktor i lice ovlašćeno za izdavanje računovodstvene isprave</Text>
-            <Text>Pin Technology d.o.o. Beograd - Savski venac</Text>
+            <Text>DNP GO TECHNOLOGIES d.o.o. Beograd - Vračar</Text>
             <Text> </Text>
             <Text> </Text>
           </View>
