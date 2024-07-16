@@ -124,7 +124,7 @@ export default async function print(invoice, orders, summaryInput) {
   let discountPercent = !!invoice.appFee ? Math.abs(round(discount * 100 / invoice.appFee)) : 0
   let vatAmount = round(invoice.total * invoice.vat / 100.)
 
-  let onlineOrders = orders.filter(order => order.paymentMethod === 'CARD' || order.paymentMethod === 'HYBRID')
+  let onlineOrders = orders.filter(order => order.paymentMethod === 'CARD'/* || order.paymentMethod === 'HYBRID'*/)
 
   let onlineTotal = onlineOrders.reduce((acc, curr)=> {
     acc += curr.itemsPrice
